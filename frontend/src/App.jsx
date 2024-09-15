@@ -4,6 +4,7 @@ import './App.css'
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
 import Home from './components/Home';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const appRouter = createBrowserRouter([
@@ -24,7 +25,8 @@ function App() {
 
   return (
     <>
-     <RouterProvider router={appRouter}/>
+      <RouterProvider router={appRouter} />
+      <Toaster/>
     </>
   )
 }

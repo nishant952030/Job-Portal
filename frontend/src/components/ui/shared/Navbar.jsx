@@ -9,7 +9,7 @@ import {
 import { Button } from '../button';
 import { Link } from 'react-router-dom';
 
-const Navbar = () => {
+const Navbar = ({signup}) => {
     const [user, setUser] = useState(false)
     return (
         <div className='bg-white flex flex-row justify-between px-3 w-full'>
@@ -22,13 +22,13 @@ const Navbar = () => {
                 <li className='mx-3'>Home</li>
                 <li className='mx-3'>Jobs</li>
                 <li className='mx-3'>browse</li>
-                {!user ? < div className='flex items-center gap-2'>
+                {!user && !signup? < div className='flex items-center gap-2'>
                     <Link to="/login">  <Button variant="outline">Login</Button></Link>
                     <Link to="/signup"> <Button className="bg-[#F83002] hover:bg-[#ac3a20] rounded-xl text-white" >Signup</Button></Link>
 
 
                 </div> :
-                    <Popover>
+                   !signup ?<Popover>
                         <PopoverTrigger><Avatar>
                             <AvatarImage src="https://github.com/shadcn.png" />
                             <AvatarFallback>CN</AvatarFallback>
@@ -64,7 +64,7 @@ const Navbar = () => {
                             </div>
 
                         </PopoverContent>
-                    </Popover>}
+                    </Popover>:""}
             </ul>
 
         </div >

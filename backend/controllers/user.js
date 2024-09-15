@@ -5,18 +5,20 @@ import jwt from "jsonwebtoken";
 export const register = async (req, res) => {
     try {
         const { fullname, email, password, phoneNumber, role } = req.body;
-
+      console.log(req.body)
         if (!fullname || !email || !phoneNumber || !password || !role) {
+            console.log(fullname,email,phoneNumber,password,role)
             return res.status(400).json({
                 message: "All fields are mandatory",
                 success: false,
             });
         }
-
+        const data = req.body
         const existingUser = await User.findOne({ email }, { _id: 1 });
         if (existingUser) {
-            return res.status(409).json({
+            return res.status(409).json({data,
                 message: "User already exists, please login",
+                
                 success: false,
             });
         }
