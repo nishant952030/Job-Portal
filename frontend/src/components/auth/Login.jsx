@@ -3,14 +3,21 @@ import Navbar from '../ui/shared/Navbar';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from 'react-hot-toast'; // Import toast
-import { USER_API_END_POINT } from '../utils/constant';
+import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { USER_API_END_POINT } from '../utils/constant';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { sethUser, setLoading } from '@/redux/authSlice';
+import Loader from '../../components/utils/Loader'; // Import Loader
 
-const Login= () => {
-    // State for form datac
+const Login = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const loading = useSelector((state) => state.auth.loading);
+    const { user}=useSelector(store=>store.auth)// Get loading state from Redux
+
+    // State for form data
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -19,23 +26,17 @@ const Login= () => {
 
     // Handle input change
     const handleChange = (e) => {
-        const { name, value, type, files } = e.target;
-        if (type === 'file') {
-            setFormData({
-                ...formData,
-                [name]: files[0],
-            });
-        } else {
-            setFormData({
-                ...formData,
-                [name]: value,
-            });
-        }
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
     };
+
     const handleRadioChange = (value) => {
         setFormData({
             ...formData,
-            userType: value,
+            role: value,
         });
     };
 
@@ -46,31 +47,34 @@ const Login= () => {
         formDataToSend.append('email', formData.email);
         formDataToSend.append('password', formData.password);
         formDataToSend.append('role', formData.role);
-        console.log(formDataToSend)
+
         try {
+            dispatch(setLoading(true)); // Start loading
             const response = await axios.post(`${USER_API_END_POINT}/user/login`, formDataToSend);
 
-            console.log(response)
-            if (response.status === 201 || response.status === 200) {
+            if (response.status === 200) {
                 toast.success(response.data.message);
-                console.log(response.data);
-                navigate("/")
+                dispatch(sethUser(response.data.user))
+                navigate("/");
             } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
             console.error(error);
-            toast.error(error.response.data.message)
-            toast.error('An error occurred during signup.');
-        } 
+            toast.error(error.response?.data?.message || 'An error occurred during login.');
+        } finally {
+            dispatch(setLoading(false)); // Stop loading
+        }
     };
 
     return (
         <div>
-            <Navbar signup={true} />
+            {loading && <Loader />} {/* Display loader based on loading state */}
+            <Navbar signup={false} />
             <div className='flex items justify-center max-w-7xl mx-auto'>
                 <form onSubmit={handleSubmit} className='w-1/2 border border-gray-200 rounded-lg p-4 my-10'>
                     <h1 className='font-bold text-xl mb-5 text-gray-700'>Log In</h1>
+
                     {/* E-mail */}
                     <div className='my-2'>
                         <Label className="flex justify-start my-3 font-semibold">E-mail</Label>
@@ -84,7 +88,7 @@ const Login= () => {
                         />
                     </div>
 
-                    {/* Password and Confirm Password */}
+                    {/* Password */}
                     <div className='my-2'>
                         <Label className="flex justify-start my-3 font-semibold">Password</Label>
                         <div className='flex flex-row gap-3'>
@@ -117,7 +121,6 @@ const Login= () => {
                             </div>
                         </RadioGroup>
                     </div>
-
 
                     {/* Submit Button */}
                     <div className='mt-5'>

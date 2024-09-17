@@ -3,13 +3,19 @@ import Navbar from '../ui/shared/Navbar';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from 'react-hot-toast'; // Import toast
+import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { USER_API_END_POINT } from '../utils/constant';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoading } from '@/redux/authSlice';
+import Loader from '../../components/utils/Loader'; // Import Loader
 
 const Signup = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const loading = useSelector((state) => state.auth.loading); // Get loading state from Redux
+
     // State for form data
     const [formData, setFormData] = useState({
         fullName: '',
@@ -17,11 +23,10 @@ const Signup = () => {
         phoneNumber: '',
         password: '',
         confirmPassword: '',
-        role: 'student', 
-        profilePic: null, 
+        role: 'student',
+        profilePic: null,
     });
 
- 
     const handleChange = (e) => {
         const { name, value, type, files } = e.target;
         if (type === 'file') {
@@ -37,15 +42,13 @@ const Signup = () => {
         }
     };
 
-    
     const handleRadioChange = (value) => {
         setFormData({
             ...formData,
-            userType: value,
+            role: value,
         });
     };
 
-   
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
@@ -58,30 +61,30 @@ const Signup = () => {
         formDataToSend.append('phoneNumber', formData.phoneNumber);
         formDataToSend.append('password', formData.password);
         formDataToSend.append('role', formData.role);
-    console.log(formDataToSend)
         if (formData.profilePic) {
             formDataToSend.append('profilePic', formData.profilePic);
         }
         try {
+            dispatch(setLoading(true));
             const response = await axios.post(`${USER_API_END_POINT}/user/register`, formDataToSend);
 
-            console.log(response)
             if (response.status === 201 || response.status === 200) {
                 toast.success(response.data.message);
-                console.log(response.data);
             } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
             console.error(error);
-            toast.error(error.response.data.message)
-            toast.error('An error occurred during signup.');
+            toast.error(error.response?.data?.message || 'An error occurred during signup.');
         } finally {
-            navigate("/login")
+            dispatch(setLoading(false));
+            navigate("/login");
         }
     };
+
     return (
         <div>
+            {loading && <Loader />} {/* Display loader based on loading state */}
             <Navbar signup={true} />
             <div className='flex items justify-center max-w-7xl mx-auto'>
                 <form onSubmit={handleSubmit} className='w-1/2 border border-gray-200 rounded-lg p-4 my-10'>
@@ -106,13 +109,14 @@ const Signup = () => {
                         <Input
                             className="rounded-lg"
                             type="email"
-                            placeholder="JohhDoe@gmail.com"
+                            placeholder="JohnDoe@gmail.com"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
                         />
                     </div>
 
+                    {/* Phone Number */}
                     <div className='my-2'>
                         <Label className="flex justify-start my-3 font-semibold">Mobile No.</Label>
                         <Input
@@ -122,8 +126,8 @@ const Signup = () => {
                             name="phoneNumber"
                             value={formData.phoneNumber}
                             onChange={handleChange}
-                            pattern="[0-9]{10}" // Allows only 10-digit phone numbers
-                            required // Makes this field mandatory
+                            pattern="[0-9]{10}"
+                            required
                         />
                     </div>
 
@@ -191,6 +195,6 @@ const Signup = () => {
             </div>
         </div>
     );
-}
+};
 
 export default Signup;
