@@ -44,8 +44,8 @@ const Navbar = () => {
                                     <AvatarImage src="https://github.com/shadcn.png" />
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
-                                <div> <h4 className='font-bold ml-4'>Jalpa ji</h4>
-                                    <p className='ml-4 '>Story teller
+                                <div> <h4 className='font-bold ml-4'>{ user.fullname}</h4>
+                                    <p className='ml-4 '>{user.profile.bio}
                                     </p>
                                 </div>
 
@@ -60,7 +60,7 @@ const Navbar = () => {
                                     className="flex items-center space-x-2 text-slate-700 hover:bg-slate-100 transition duration-300 ease-in-out"
                                     onClick={() => {
                                         // Add your logout functionality here
-                                       dispatch(sethUser(null))
+                                        dispatch(sethUser(null))
                                         navigate("/");
                                     }}
                                 >

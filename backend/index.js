@@ -18,10 +18,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const corsConfig = {
-    origin: 'http://localhost:5173',
-    credentials: true // corrected option name
+    origin: 'http://localhost:5173', // Frontend URL
+    credentials: true // Allow credentials (cookies, authentication)
 };
 app.use(cors(corsConfig));
+
 
 app.get("/", (req, res) => {
     return res.json({ message: "hello there" });

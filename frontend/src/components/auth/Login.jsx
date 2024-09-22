@@ -15,7 +15,7 @@ const Login = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const loading = useSelector((state) => state.auth.loading);
-    const { user}=useSelector(store=>store.auth)// Get loading state from Redux
+    const {user}=useSelector(store=>store.auth)// Get loading state from Redux
 
     // State for form data
     const [formData, setFormData] = useState({
@@ -50,7 +50,12 @@ const Login = () => {
 
         try {
             dispatch(setLoading(true)); // Start loading
-            const response = await axios.post(`${USER_API_END_POINT}/user/login`, formDataToSend);
+            const response = await axios.post(`${USER_API_END_POINT}/user/login`, formDataToSend,{
+                headers: { 'Content-Type': "multipart/form-data" },
+                withCredentials: true,
+            });
+            localStorage.setItem("token", response.data.token)
+            console.log(response)
 
             if (response.status === 200) {
                 toast.success(response.data.message);
