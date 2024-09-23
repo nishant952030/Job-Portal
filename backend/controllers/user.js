@@ -97,23 +97,13 @@ export const login = async (req, res) => {
             profile: user.profile
         };
 
-        // Set cookie options
         const cookieOptions = {
-            httpOnly: true,    // Prevents JavaScript access to the cookie
-            secure: true,      // Ensures the cookie is sent over HTTPS (use this in production)
-            sameSite: 'Strict' // Ensures the cookie is only sent with requests from the same site
+            httpOnly: true,
+            secure: true,  // ensures cookies are only sent over HTTPS
+            sameSite: 'None' // allows cross-site cookies (for different origins)
         };
+        res.cookie('token', token, cookieOptions);
 
-        // Set the token cookie with the specified options
-        const temp = res.cookie('token', token, cookieOptions);
-
-        // Log cookie setting for debugging
-        /*  console.log('Setting cookie:', {
-             token: token.substring(0, 10) + '...',  // Log only part of the token for security
-             options: cookieOptions
-         }); */
-
-        // Send the response
         return res.status(200).json({
             message: `Welcome back, ${user.fullname}`,
             success: true,
@@ -126,7 +116,7 @@ export const login = async (req, res) => {
         return res.status(500).json({
             message: "Internal server error",
             success: false,
-            error: error.message  // Include the error message for debugging
+            error: error.message 
         });
     }
 };
