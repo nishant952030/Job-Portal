@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const corsConfig = {
-    origin: 'http://localhost:5173', // Frontend URL
+    origin: 'https://job-portal-ten-blond.vercel.app', // Frontend URL
     credentials: true // Allow credentials (cookies, authentication)
 };
 app.use(cors(corsConfig));
