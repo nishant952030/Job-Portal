@@ -10,6 +10,9 @@ import { Button } from '../button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { sethUser } from '@/redux/authSlice';
+import { USER_API_END_POINT } from '@/components/utils/constant';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
     const { user } = useSelector(store => store.auth)//
@@ -18,6 +21,35 @@ const Navbar = () => {
     const handlProfile = () => {
         navigate("/profile")
     }
+    const logout =async () => {
+        try {
+            const res = await axios.get(`${USER_API_END_POINT}/user/logout`)
+            if (!res) {
+                toast.error("Couldn't Log Out");
+                return;
+            }
+
+            toast.success(res.data.message);
+            navigate("/")
+            dispatch(sethUser(null));
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    const getInitials = (name) => {
+        const nameParts = name.trim().split(" ");
+
+        if (nameParts.length >= 2) {
+            const firstNameInitial = nameParts[0][0].toUpperCase();
+            const lastNameInitial = nameParts[1][0].toUpperCase();
+
+            return firstNameInitial + lastNameInitial;
+        } else {
+            return nameParts[0][0].toUpperCase();
+        }
+    };
+
     return (
         <div className='bg-white flex flex-row justify-between px-3 w-full'>
             <div>
@@ -34,23 +66,28 @@ const Navbar = () => {
                     <Link to="/signup"> <Button className="bg-[#F83002] hover:bg-[#ac3a20] rounded-xl text-white" >Signup</Button></Link>
                 </div> :
                     <Popover>
-                        <PopoverTrigger><Avatar>
-                            <AvatarImage src="https://github.com/shadcn.png" />
-                            <AvatarFallback>CN</AvatarFallback>
-                        </Avatar></PopoverTrigger>
-                        <PopoverContent className="w-80">
-                            <div className='flex gp-4 spave-x-2 items-center'>
+                        <PopoverTrigger>
+                            <Avatar>
+                                <AvatarImage src={user.profile.profile} />
+                                <AvatarFallback>
+                                    {getInitials(user.fullname)}
+                                </AvatarFallback>
+                            </Avatar>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 bg-white border border-gray-200 shadow-lg rounded-xl">
+                            <div className="p-4 flex gap-4 space-x-2 items-center">
                                 <Avatar>
-                                    <AvatarImage src="https://github.com/shadcn.png" />
-                                    <AvatarFallback>CN</AvatarFallback>
+                                    <AvatarImage src={user.profile.profile} />
+                                    <AvatarFallback>{getInitials(user.fullname)}</AvatarFallback>
                                 </Avatar>
-                                <div> <h4 className='font-bold ml-4'>{ user.fullname}</h4>
-                                    <p className='ml-4 '>{user.profile.bio}
+                                <div>
+                                    <h4 className="font-bold ml-4">{user.fullname}</h4>
+                                    <p className="ml-4">
+                                        {user.profile.bio?.split(" ").slice(0, 5).join(" ")}...
                                     </p>
                                 </div>
-
                             </div>
-                            <div className='py-3 flex flex-row'>
+                            <div className="py-3 flex flex-row">
                                 <p className='flex items-center justify-start cursor-pointer text-slate-700 h-10 w-full 
                hover:bg-slate-100 pl-3 rounded-lg transition duration-300 ease-in-out mr-4' onClick={handlProfile}>
                                     <UserRoundPen size={20} className='mr-3' /> Profile
@@ -58,19 +95,15 @@ const Navbar = () => {
                                 <Button
                                     variant="outline"
                                     className="flex items-center space-x-2 text-slate-700 hover:bg-slate-100 transition duration-300 ease-in-out"
-                                    onClick={() => {
-                                        // Add your logout functionality here
-                                        dispatch(sethUser(null))
-                                        navigate("/");
-                                    }}
+                                    onClick={logout}
                                 >
                                     <LogOut className="w-4 h-4" />
                                     <span>Logout</span>
                                 </Button>
                             </div>
-
                         </PopoverContent>
-                    </Popover>}
+                    </Popover>
+}
             </ul>
 
         </div >

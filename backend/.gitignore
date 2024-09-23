@@ -1,0 +1,31 @@
+# Node.js modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# Database dumps and lock files
+dump.rdb
+*.lock
+
+# Generated files
+dist/
+build/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Optional (IDE-specific)
+.idea/                # JetBrains (WebStorm, IntelliJ)
+.vscode/              # VSCode
+*.sublime-project     # Sublime Text projects
+*.sublime-workspace
+*.swp                 # Swap files (e.g., Vim)

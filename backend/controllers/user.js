@@ -1,6 +1,8 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import getDataUri from "../utils/datauri.js";
+import cloudinary from "../utils/cloudinary.js";
 
 export const register = async (req, res) => {
     try {
@@ -29,11 +31,11 @@ export const register = async (req, res) => {
         const newUser = await User.create({
             fullname,
             email,
-            phone: phoneNumber,
+            phoneNumber: phoneNumber,
             password: hashedPassword,
             role
         });
-        console.log("newly created user",newUser)
+        console.log("newly created user", newUser)
         return res.status(201).json({
             message: "User registered successfully",
             success: true,
@@ -90,7 +92,7 @@ export const login = async (req, res) => {
             _id: user._id,
             fullname: user.fullname,
             email: user.email,
-            phoneNumber: user.phoneNumber,
+            phone: user.phoneNumber,
             role: user.role,
             profile: user.profile
         };
@@ -106,10 +108,10 @@ export const login = async (req, res) => {
         const temp = res.cookie('token', token, cookieOptions);
 
         // Log cookie setting for debugging
-       /*  console.log('Setting cookie:', {
-            token: token.substring(0, 10) + '...',  // Log only part of the token for security
-            options: cookieOptions
-        }); */
+        /*  console.log('Setting cookie:', {
+             token: token.substring(0, 10) + '...',  // Log only part of the token for security
+             options: cookieOptions
+         }); */
 
         // Send the response
         return res.status(200).json({
@@ -143,12 +145,14 @@ export const logout = (req, res) => {
         });
     }
 };
+
+
 export const updateProfile = async (req, res) => {
     try {
-        const { fullname, email, phoneNumber, bio, skills } = req.body;
-        const userId = req.userId;  // Assuming userId is set in req by middleware
+        const { fullname, email, phone, bio, skills } = req.body;
+        const resume = req.file;
+        const userId = req.userId;
 
-        // Find the user by ID
         let user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({
@@ -157,52 +161,33 @@ export const updateProfile = async (req, res) => {
             });
         }
 
-        // Check each field and update only if provided
-        if (fullname) {
-            user.fullname = fullname;
+        if (resume) {
+            if (resume.mimetype !== "application/pdf") {
+                return res.status(400).json({
+                    message: "Only PDF files are allowed",
+                    success: false
+                });
+            }
+
+            const fileUrl = getDataUri(resume);
+            const cloudRes = await cloudinary.uploader.upload(fileUrl.content);
+
+            if (cloudRes) {
+                user.profile.resume = cloudRes.secure_url;
+                user.profile.resumeOriginalName = resume.originalname;
+            }
         }
 
-        if (email) {
-            user.email = email;
-        }
+        if (fullname) user.fullname = fullname;
+        if (email) user.email = email;
+        if (phone) user.phone = phone;
+        if (bio) user.profile.bio = bio;
+        if (skills) user.profile.skills = Array.isArray(skills) ? skills : skills.split(',');
 
-        if (phoneNumber) {
-            user.phoneNumber = phoneNumber;
-        }
 
-        if (bio) {
-            user.profile.bio = bio;
-        }
-
-        if (skills) {
-            // Convert skills from comma-separated string to array
-            const skillsArray = skills.split(",");
-            user.profile.skills = skillsArray;
-        }
-
-        // Save the updated user profile
         await user.save();
 
-        // Return the updated user object
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            {
-                fullname,
-                email,
-                phoneNumber,
-                'profile.bio': bio,
-                'profile.skills': skills ? skills.split(",") : undefined
-            },
-            { new: true }  // This returns the updated document
-        );
-
-        if (!updatedUser) {
-            return res.status(404).json({
-                message: "User not found",
-                success: false
-            });
-        }
-
+        const updatedUser = await User.findById(userId);
         return res.status(200).json({
             message: "Profile updated successfully",
             user: updatedUser,
@@ -217,3 +202,52 @@ export const updateProfile = async (req, res) => {
         });
     }
 };
+export const updateProfilePic = async (req, res) => {
+    const userId = req.userId;
+    const pic = req.file;
+    try {
+        let user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+                success: false
+            });
+        }
+        if (!pic) {
+            return res.status(400).json({
+                message: "No picture found in the request",
+                success: false,
+            });
+        }
+
+        if (pic.mimetype === 'image/jpeg' || pic.mimetype === 'image/png') {
+            const fileUrl = getDataUri(pic);
+            const cloudRes = await cloudinary.uploader.upload(fileUrl.content);
+
+            if (cloudRes && cloudRes.secure_url) {
+                user.profile.profile = cloudRes.secure_url;
+                await user.save();
+
+                return res.status(200).json({
+                    message: "Profile pic updated successfully",
+                    user: user,
+                    success: true
+                });
+            } else {
+                throw new Error("Failed to upload image to Cloudinary");
+            }
+        } else {
+            return res.status(400).json({
+                message: "Invalid file type. Only JPEG and PNG are allowed.",
+                success: false
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "An error occurred while updating the profile picture",
+            success: false,
+            error: error.message
+        });
+    }
+}

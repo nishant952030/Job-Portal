@@ -11,7 +11,7 @@ export const registerCompany = async (req, res) => {
                 success: false
             });
         }
-        console.log(companyName)
+        // console.log(companyName)
         let company = await Company.findOne({ name: companyName });
 
         if (company) {
@@ -25,7 +25,7 @@ export const registerCompany = async (req, res) => {
             name: companyName,
             userId: req.userId
         });
-        console.log(company)
+        // console.log(company)
         return res.status(200).json({
             message: "Company registered successfully",
             success: true,
@@ -46,7 +46,7 @@ export const getCompany = async (req, res) => {
     try {
         const userId = req.userId; // ID of the logged-in user
         const companies = await Company.find({ userId }); // Get companies created by the user
-        console.log(companies+" "+userId)
+        // console.log(companies+" "+userId)
         if (!companies || companies.length === 0) {
             return res.status(404).json({
                 message: "No companies found",

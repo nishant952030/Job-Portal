@@ -1,95 +1,186 @@
-import React, { useState } from 'react';
-import Navbar from './ui/shared/Navbar';
+import React, { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { Camera, Mail, Phone, FileText, Edit3, Award, Briefcase } from 'lucide-react';
+import Navbar from './ui/shared/Navbar';
 import AppliedTables from './AppliedTables';
-import EditProfileModal from './EditPofile.jsx';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-
+import EditProfileModal from './EditPofile';
+import axios from 'axios';
+import { USER_API_END_POINT } from './utils/constant';
+import toast from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import { sethUser } from '@/redux/authSlice';
+import Loader from './ui/Loader';
 const Profile = () => {
   const { user } = useSelector(store => store.auth);
-  console.log(user)
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const fileInputRef = useRef(null);
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      toast.error("Please select an image");
+      return;
+    }
+
+    // Check file type
+    if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+      toast.error("Only JPEG and PNG images are allowed");
+      return;
+    }
+
+    // Check file size (e.g., max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error("File size should not exceed 5MB");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setLoading(true);
+      console.log(formData)
+      const res = await axios.put(`${USER_API_END_POINT}/user/profile/profile-pic`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
+      });
+      console.log(res)
+      if (res.data.success) {
+        toast.success(res.data.message || "Profile picture updated successfully");
+
+        // Update Redux store with the new user data
+        dispatch(sethUser(res.data.user));
+      } else {
+        toast.error(res.data.message || "Failed to update profile picture");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to update profile picture");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
 
   return (
-    <div className="bg-gray-100 min-h-screen text-start">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
       <Navbar />
-      <div className="max-w-2xl mx-auto bg-white border border-gray-300 shadow-xl rounded-lg mt-10 p-10 text-start">
-        {/* Profile Picture and Basic Info */}
-        <div className="flex flex-row gap-8">
-          <div className="flex-shrink-0">
-            <img
-              src={user.profile.profile || "https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
-              className="w-40 h-40 rounded-full border-4 border-gray-200 object-cover"
-              alt="User Profile"
-            />
+      <input
+        ref={fileInputRef}
+        className='hidden'
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+      />
+      <div className="max-w-4xl mx-auto pt-10 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white shadow-2xl rounded-3xl overflow-hidden">
+          {/* Header Section */}
+          <div className="relative h-48 bg-gradient-to-r from-blue-500 to-indigo-600">
+            <div className=" flex justify-end">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-white px-6 py-2 rounded-lg rounded-bl-3xl font-semibold transition-all duration-200 hover:bg-gray-100 flex items-center"
+              >
+                <Edit3 size={18} className="mr-2 text-indigo-600" />
+              </button>
+            </div>
+            <div className="absolute -bottom-16 left-10">
+              <img
+                src={user.profile.profile || "/api/placeholder/150/150"}
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                alt="User Profile"
+              />
+              <button
+                onClick={triggerFileInput}
+                className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors duration-200"
+              >
+                {loading ? <Loader /> : <Camera size={20} className="text-gray-600" />}
+              </button>
+
+            </div>
+            <div className='absolute top-36 left-48 flex flex-col text-start'>
+              <h2 className="text-3xl font-bold text-white uppercase">{user.fullname}</h2>
+              <p className="text-lg text-indigo-600 mt-4 uppercase">{user.role}</p>
+            </div>
           </div>
-          <div className="flex flex-col justify-center">
-            <h2 className="text-3xl font-bold text-gray-800 uppercase">{user.fullname}</h2>
-            <p className="text-lg text-gray-500 mt-1 uppercase">{user.role}</p>
-            <p className="text-md text-gray-600 mt-2 uppercase">{user.email}</p>
-            <p className="text-md text-gray-600 mt-1 uppercase">{user.phoneNumber || "No phone number provided"}</p>
+
+          {/* Content Section */}
+          <div className="pt-20 px-10 pb-10">
+            <div className="mt-6 flex flex-col sm:flex-row sm:items-center text-gray-700">
+              <div className="flex items-center mr-6 mb-2 sm:mb-0">
+                <Mail size={18} className="mr-2 text-indigo-500" />
+                {user.email}
+              </div>
+              <div className="flex items-center">
+                <Phone size={18} className="mr-2 text-indigo-500" />
+                {user.phone || "No phone number provided"}
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col md:flex-row items-start md:items-center gap-4">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                <FileText size={24} className="mr-2 text-indigo-500" />
+                Bio
+              </h3>
+              <p className="text-gray-700 text-start md:mt-0 -mt-4 pl-8">
+                {user.profile.bio || "Add your bio here..."}
+              </p>
+            </div>
+
+
+            <div className="mt-8">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                <Award size={24} className="mr-2 text-indigo-500" />
+                Skills
+              </h3>
+              {user.profile.skills && user.profile.skills.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2 pl-8">
+                  {user.profile.skills.map((skill, index) => (
+                    <span key={index} className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 mt-3 pl-8">Add your skills here...</p>
+              )}
+            </div>
+
+            <div className="mt-8">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                <Briefcase size={24} className="mr-2 text-indigo-500" />
+                Resume
+              </h3>
+              {user.profile.resume ? (
+                <div className="mt-3 pl-8">
+                  <a
+                    href={user.profile.resume}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 hover:text-indigo-800 underline flex items-center"
+                  >
+                    <FileText size={18} className="mr-2" />
+                    {user.profile.resumeOriginalName || "View Resume"}
+                  </a>
+                </div>
+              ) : (
+                <p className="text-gray-500 mt-3 pl-8">No resume uploaded.</p>
+              )}
+            </div>
           </div>
         </div>
-        {/* Edit Button */}
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 hover:bg-blue-600"
-          >
-            Edit Profile
-          </button>
-        </div>
-        {/* Bio Section */}
-        <div className="mt-8">
-          <h3 className="text-xl font-bold text-gray-800">Bio</h3>
-          <p className="text-gray-700 mt-3 leading-relaxed">
-            {user.profile.bio || "Add your bio here..."}
-          </p>
-        </div>
-        {/* Skills Section */}
-        <div className="mt-8">
-          <h3 className="text-xl font-bold text-gray-800">Skills</h3>
-          <ul className="list-disc pl-5 mt-3">
-            {user.profile.skills && user.profile.skills.length > 0 ? (
-              user.profile.skills.map((skill, index) => (
-                <li key={index} className="text-gray-700 text-lg">{skill}</li>
-              ))
-            ) : (
-              <p className="text-gray-500">Add your skills here...</p>
-            )}
-          </ul>
-        </div>
-        {/* Resume Upload Section */}
-        <div className="mt-8">
-          <h3 className="text-xl font-bold text-gray-800">Resume</h3>
-          <p className="text-gray-500 mb-2">Upload your resume (PDF):</p>
-          <div className="flex items-center gap-4">
-            <input
-              type="file"
-              accept="application/pdf"
-              className="border rounded p-2 text-gray-700"
-            />
-            <button
-              className="bg-[#f83006] text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 hover:bg-[#cc2704]"
-            >
-              Upload
-            </button>
-          </div>
+
+        <div className='mt-10'>
+          <AppliedTables />
         </div>
       </div>
-      {/* Applied Tables */}
-      <div className='p-7'>
-        <AppliedTables />
-      </div>
-      {/* Edit Profile Modal */}
+
       {isModalOpen && (
         <EditProfileModal
           user={user}
@@ -98,6 +189,6 @@ const Profile = () => {
       )}
     </div>
   );
-}
+};
 
 export default Profile;

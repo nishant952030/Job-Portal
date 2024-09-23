@@ -9,7 +9,7 @@ import { USER_API_END_POINT } from '../utils/constant';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { sethUser, setLoading } from '@/redux/authSlice';
-import Loader from '../../components/utils/Loader'; // Import Loader
+import Loader from '../ui/Loader'; // Import Loader
 
 const Login = () => {
     const navigate = useNavigate();
