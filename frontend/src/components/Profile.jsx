@@ -10,8 +10,11 @@ import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { sethUser } from '@/redux/authSlice';
 import Loader from './ui/Loader';
+import AdminPostedJobs from './AdminPostedJobs';
+import RecruiterCompanies from './RecruiterCompanies';
 const Profile = () => {
   const { user } = useSelector(store => store.auth);
+  const { loader } = useSelector(store => store.company);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const fileInputRef = useRef(null);
   const dispatch = useDispatch();
@@ -90,10 +93,10 @@ const Profile = () => {
                 <Edit3 size={18} className="mr-2 text-indigo-600" />
               </button>
             </div>
-            <div className="absolute -bottom-16 left-10">
+            <div className="absolute -bottom-10 left-10">
               <img
                 src={user.profile.profile || "/api/placeholder/150/150"}
-                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                className="w-20 h-20 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-lg object-cover"
                 alt="User Profile"
               />
               <button
@@ -104,9 +107,9 @@ const Profile = () => {
               </button>
 
             </div>
-            <div className='absolute top-36 left-48 flex flex-col text-start'>
-              <h2 className="text-3xl font-bold text-white uppercase">{user.fullname}</h2>
-              <p className="text-lg text-indigo-600 mt-4 uppercase">{user.role}</p>
+            <div className='absolute top-36 left-32 sm:top-36 sm:left-48 flex flex-col text-start'>
+              <h2 className=" sm:text-3xl text-2xl sm:mt-0 mt-3 font-bold text-white uppercase">{user.fullname}</h2>
+              <p className=" text-md sm:text-lg text-indigo-600 sm:mt-5 mt-2 uppercase">{user.role}</p>
             </div>
           </div>
 
@@ -128,7 +131,7 @@ const Profile = () => {
                 <FileText size={24} className="mr-2 text-indigo-500" />
                 Bio
               </h3>
-              <p className="text-gray-700 text-start md:mt-0 -mt-4 pl-8">
+              <p className="text-gray-700 text-start -ml-10 md:mt-0 -mt-4 pl-8">
                 {user.profile.bio || "Add your bio here..."}
               </p>
             </div>
@@ -177,7 +180,10 @@ const Profile = () => {
         </div>
 
         <div className='mt-10'>
-          <AppliedTables />
+          {user.role === 'student' ? <AppliedTables /> : <div>
+            <AdminPostedJobs/>
+            {!loader?<RecruiterCompanies />:<Loader/>}
+          </div>}
         </div>
       </div>
 

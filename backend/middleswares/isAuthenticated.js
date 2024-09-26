@@ -4,9 +4,9 @@ const isAuthenticated = async (req, res, next) => {
     try {
         console.log('Cookies received:', req.cookies);
 
-        // Extract the token from cookies
+    
         const token = req.cookies.token;
-        console.log(token)
+        console.log("token in  isAuthentic middleware",token)
         if (!token) {
             console.log('No token found in cookies');
             return res.status(401).json({

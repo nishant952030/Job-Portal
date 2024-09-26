@@ -2,33 +2,34 @@ import Job from "../models/job.js";
 // admin or recruiter will post the job
 export const postJob = async (req, res) => {
     try {
-        const { title, description, requirements, salary, location, jobtype, experience, position,companyId } = req.body;
+        const { title, description, requirements, salary, location, jobType, position, company } = req.body;
         const userId = req.userId;
-        if (!title || !description || !requirements || !salary || !location || !jobtype || !experience || !position|| !companyId) {
+
+        if (!title || !description || !requirements || !salary || !location || !jobType || !position || !company) {
             return res.status(400).json({
                 message: "All fields are required",
                 success: false
             });
         }
+
         const newJob = await Job.create({
             title,
             description,
             requirements,
-            salary,
+            salary: Number(salary),
             location,
-            jobType: jobtype,
-            experience,
-            position,
-            company: companyId,
+            jobType,
+            position: Number(position),
+            company, // This should be an ObjectId
             created_by: userId
-        })
+        });
+
         return res.status(201).json({
             message: "Job posted successfully",
             success: true,
             job: newJob
         });
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Error while posting job:", error);
         return res.status(500).json({
             message: "Internal server error",
