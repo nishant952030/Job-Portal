@@ -16,9 +16,8 @@ const JobForm = ({ setOpen, company }) => {
         salary: '',
         location: company?.location || '',
         jobType: '',
-        position: '', // Change to number if it should be a number
+        position: '', 
         company: company?._id || '',
-        designation,
     });
 
     const handleChange = (e) => {
