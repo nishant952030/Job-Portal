@@ -140,7 +140,7 @@ const Navbar = () => {
         <div className='bg-white flex flex-row justify-between items-center px-3 w-full py-2'>
             <div>
                 <h1 className='text-2xl font-bold'>
-                    Job<span className='text-[#F83002]'>Portal</span>
+                    Career<span className='text-[#F83002]'>Catalyst</span>
                 </h1>
             </div>
             {isSmallScreen ? (

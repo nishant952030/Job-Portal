@@ -12,7 +12,7 @@ const Footer = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Company Info */}
                     <div>
-                        <h2 className="text-xl font-bold text-gray-800">Job Portal</h2>
+                        <h2 className="text-xl font-bold text-gray-800">CareerCatalyst</h2>
                         <p className="mt-4 text-sm text-gray-600">
                             We help people find the job of their dreams. Explore opportunities and find your next career move.
                         </p>
