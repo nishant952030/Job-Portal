@@ -3,6 +3,9 @@
   margin: 0 auto;
   padding: 1rem;
   text-align: center;
+  font-family: "Lato", sans-serif;
+    font-weight: 300;
+    font-style: normal;
 }
 
 .logo {

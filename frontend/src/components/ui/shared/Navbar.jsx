@@ -14,6 +14,7 @@ import JobForm from '@/components/forms/JobForm';
 import CompanyForm from '@/components/forms/CompanyForm';
 import { setAllCompanies, setLoader } from '@/redux/adminCompanySlice';
 import { setAllJobs } from '@/redux/jobslice';
+import { setAppliedJobs } from '@/redux/userAppliedJobs';
 
 const Navbar = () => {
     const { user } = useSelector(store => store.auth);
@@ -44,39 +45,60 @@ const Navbar = () => {
 
 
     const handleProfile = async () => {
+
         navigate("/profile")
-        try {
-            dispatch(setLoader(true));
-            const res = await axios.get(`${USER_API_END_POINT}/company/getCompany`, {
-                withCredentials: true
-            });
-            if (res.status === 200) {
-                console.log(res);
-                dispatch(setAllCompanies(res.data.companies))
-            } else {
-                console.error(`Unexpected response status: ${res.status}`);
+        
+        if (user.role === 'recruiter') {
+            try {
+                dispatch(setLoader(true));
+                const res = await axios.get(`${USER_API_END_POINT}/company/getCompany`, {
+                    withCredentials: true
+                });
+                if (res.status === 200) {
+                    console.log(res);
+                    dispatch(setAllCompanies(res.data.companies))
+                } else {
+                    console.error(`Unexpected response status: ${res.status}`);
+                }
+            } catch (error) {
+                console.error('Error fetching company data:', error.message);
+            } finally {
+                dispatch(setLoader(false));
             }
-        } catch (error) {
-            console.error('Error fetching company data:', error.message);
-        } finally {
-            dispatch(setLoader(false));
-        }
-        try {
-            const res = await axios.get(`${USER_API_END_POINT}/jobs/admin-jobs`, {
-                withCredentials: true
-            });
+            try {
+                const res = await axios.get(`${USER_API_END_POINT}/jobs/admin-jobs`, {
+                    withCredentials: true
+                });
 
-            if (res.status === 200) {
-                console.log("this is from handleprofile",res);
-                dispatch(setAllJobs(res.data.created_jobs))
-            } else {
-                console.error(`Unexpected response status: ${res.status}`);
+                if (res.status === 200) {
+                    console.log("this is from handleprofile", res);
+                    dispatch(setAllJobs(res.data.created_jobs))
+                } else {
+                    console.error(`Unexpected response status: ${res.status}`);
+                }
+
+            } catch (error) {
+                console.log(error)
             }
-
-        } catch (error) {
-            console.log(error)
         }
-
+        else {
+            try {
+                dispatch(setLoader(true));
+                const res = await axios.get(`${USER_API_END_POINT}/application/applied-jobs`, {
+                    withCredentials: true
+                });
+                if (res.status === 200) {
+                    console.log(res.data.applications);
+                    dispatch(setAppliedJobs(res.data.applications))
+                } else {
+                    console.error(`Unexpected response status: ${res.status}`);
+                }
+            } catch (error) {
+                console.error('Error fetching company data:', error.message);
+            } finally {
+                dispatch(setLoader(false));
+            }
+        }
     };
 
     const logout = async () => {

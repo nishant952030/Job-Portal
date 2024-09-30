@@ -27,11 +27,14 @@ const FilterCard = () => {
     ];
 
     const handleFilterChange = (filterType, value) => {
+
         setSelectedFilters(prevFilters => {
+
             const currentSelections = prevFilters[filterType] || [];
-            const newSelections = currentSelections.includes(value)
-                ? currentSelections.filter(item => item !== value)
-                : [...currentSelections, value];
+          
+            const newSelections = currentSelections.includes(value) ? currentSelections.filter(item => item !== value)  : [...currentSelections, value];
+              
+               
 
             return {
                 ...prevFilters,

@@ -8,17 +8,24 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from './ui/badge'
-
-const mockData = [
-  { id: 1, date: '12-Sep-2024', company: 'Microsoft', role: 'SDE Intern', status: 'Pending' },
-  { id: 2, date: '15-Sep-2024', company: 'Google', role: 'Frontend Developer', status: 'Accepted' },
-  { id: 3, date: '18-Sep-2024', company: 'Amazon', role: 'Data Scientist', status: 'Rejected' },
-  { id: 4, date: '20-Sep-2024', company: 'Apple', role: 'UX Designer', status: 'Pending' },
-  { id: 5, date: '22-Sep-2024', company: 'Facebook', role: 'Product Manager', status: 'Pending' },
-  { id: 6, date: '25-Sep-2024', company: 'Netflix', role: 'Backend Developer', status: 'Pending' },
-];
+import { useSelector } from 'react-redux';
+import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const AppliedTables = () => {
+  const { allAppliedJobs } = useSelector(store => store.userappliedJobs)
+  const navigate = useNavigate();
+
+  const getTime = (createdAt) => {
+    const createdTime = new Date(createdAt);
+    const timeAgo = formatDistanceToNow(createdTime, { addSuffix: true });
+    return timeAgo;
+  }
+
+  const openDescription = (jobId) => {
+    navigate(`/jobs/description/${jobId}`);
+  }
+
   return (
     <div className='text-start'>
       <h2 className='p-3 text-xl font-bold text-gray-600'>Applied jobs</h2>
@@ -32,16 +39,20 @@ const AppliedTables = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mockData.map((item) => (
-            <TableRow key={`job-${item.id}`}>
-              <TableCell className="font-medium">{item.date}</TableCell>
-              <TableCell>{item.company}</TableCell>
-              <TableCell>{item.role}</TableCell>
+          {allAppliedJobs.map((item, index) => (
+            <TableRow
+              key={`job-${item.id}`}
+              onClick={() => openDescription(item.job._id)}
+              className="cursor-pointer hover:bg-[#d4ddf7] transition-colors"
+            >
+              <TableCell className="font-medium">{getTime(item.createdAt)}</TableCell>
+              <TableCell>{item.job.company.name}</TableCell>
+              <TableCell>{item.job.title}</TableCell>
               <TableCell className="text-right">
                 <Badge
-                  className={`${item.status === 'Pending' ? 'bg-black' :
-                      item.status === 'Accepted' ? 'bg-green-500' : 'bg-red-500'
-                    } text-white rounded-lg`}
+                  className={`${item.status === 'pending' ? 'bg-black hover:bg-black ' :
+                    item.status === 'accepted' ? 'bg-green-500 hover:bg-green-400' : 'bg-red-500 hover:bg-red-400'
+                    } text-white rounded-lg uppercase`}
                 >
                   {item.status}
                 </Badge>
@@ -54,4 +65,4 @@ const AppliedTables = () => {
   )
 }
 
-export default AppliedTables
+export default AppliedTables;

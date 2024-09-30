@@ -25,6 +25,11 @@ const jobSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    status: {
+        type: String,
+        enum: ['Open', 'Closed'],
+        default: 'Open'
+    },
     position: {
         type: Number,
         required: true
@@ -39,7 +44,7 @@ const jobSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    applications:[ {
+    applications: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Application',
     }]
